@@ -7,20 +7,27 @@ import java.util.Properties;
 
 public class ConfigManager {
     private final String configPath;
+    private final Properties prop = new Properties();
 
     public ConfigManager(String configPath) {
         this.configPath = configPath;
+        loadConfig();
     }
 
-    public void printConfig() {
+    private void loadConfig() {
         try (InputStream input = new FileInputStream(configPath)) {
-            Properties prop = new Properties();
             prop.load(input);
-
-            System.out.println("--- Konfiguration ---");
-            prop.forEach((k, v) -> System.out.println(k + ": " + v));
         } catch (Exception e) {
             System.out.println("Fehler beim Laden der Konfiguration: " + e.getMessage());
         }
+    }
+
+    public void printConfig() {
+        System.out.println("--- Konfiguration ---");
+        prop.forEach((k, v) -> System.out.println(k + ": " + v));
+    }
+
+    public String get(String key) {
+        return prop.getProperty(key);
     }
 }
