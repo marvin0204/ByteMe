@@ -1,9 +1,9 @@
 
-import discovery.DiscoveryService;
+import ui.CLI;
 
 public class Main {
     public static void main(String[] args) {
-        DiscoveryService discovery = new DiscoveryService();
-        discovery.start();
+        CLI cli = new CLI();
+        cli.start();
     }
 }
