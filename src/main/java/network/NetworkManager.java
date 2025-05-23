@@ -3,10 +3,12 @@ package network;
 
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
 import java.net.Socket;
 
 public class NetworkManager {
-
     public void sendJoin(String handle, int port) {
         String message = "JOIN " + handle + " " + port + "\n";
         broadcastMessage(message);
@@ -26,12 +28,12 @@ public class NetworkManager {
 
     private void broadcastMessage(String message) {
         try {
-            java.net.DatagramSocket socket = new java.net.DatagramSocket();
+            DatagramSocket socket = new DatagramSocket();
             socket.setBroadcast(true);
             byte[] buffer = message.getBytes();
-            java.net.DatagramPacket packet = new java.net.DatagramPacket(
+            DatagramPacket packet = new DatagramPacket(
                 buffer, buffer.length,
-                java.net.InetAddress.getByName("255.255.255.255"), 4000
+                InetAddress.getByName("255.255.255.255"), 4000
             );
             socket.send(packet);
             socket.close();
