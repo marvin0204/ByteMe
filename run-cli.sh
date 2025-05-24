@@ -1,4 +1,4 @@
 
 #!/bin/bash
 javac -d out $(find src -name "*.java")
-java -cp out main.Main
+java -cp out main.CliMain

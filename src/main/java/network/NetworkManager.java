@@ -3,6 +3,9 @@ package network;
 
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
 import java.net.Socket;
 
 public class NetworkManager {
@@ -10,6 +13,12 @@ public class NetworkManager {
     public void sendJoin(String handle, int port) {
         String message = "JOIN " + handle + " " + port + "\n";
         broadcastMessage(message);
+    }
+
+    public void sendLeave(String handle) {
+        String message = "LEAVE " + handle + "\n";
+        broadcastMessage(message);
+        System.out.println("LEAVE gesendet: " + message.trim());
     }
 
     public void sendMsg(String handle, String text, String ip, int port) {
@@ -24,22 +33,6 @@ public class NetworkManager {
         }
     }
 
-    private void broadcastMessage(String message) {
-        try {
-            java.net.DatagramSocket socket = new java.net.DatagramSocket();
-            socket.setBroadcast(true);
-            byte[] buffer = message.getBytes();
-            java.net.DatagramPacket packet = new java.net.DatagramPacket(
-                buffer, buffer.length,
-                java.net.InetAddress.getByName("255.255.255.255"), 4000
-            );
-            socket.send(packet);
-            socket.close();
-            System.out.println("Broadcast gesendet: " + message.trim());
-        } catch (Exception e) {
-            System.out.println("Broadcast fehlgeschlagen: " + e.getMessage());}
-        }
-    
     public void sendImg(String handle, byte[] imageData, String ip, int port) {
         String message = "IMG " + handle + " " + imageData.length + "\n";
         try (Socket socket = new Socket(ip, port);
@@ -54,4 +47,20 @@ public class NetworkManager {
         }
     }
 
+    private void broadcastMessage(String message) {
+        try {
+            DatagramSocket socket = new DatagramSocket();
+            socket.setBroadcast(true);
+            byte[] buffer = message.getBytes();
+            DatagramPacket packet = new DatagramPacket(
+                buffer, buffer.length,
+                InetAddress.getByName("255.255.255.255"), 4000
+            );
+            socket.send(packet);
+            socket.close();
+            System.out.println("Broadcast gesendet: " + message.trim());
+        } catch (Exception e) {
+            System.out.println("Broadcast fehlgeschlagen: " + e.getMessage());
+        }
+    }
 }

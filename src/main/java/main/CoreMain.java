@@ -1,14 +1,13 @@
 
 package main;
 
-import ui.CLI;
 import config.ConfigManager;
 import discovery.DiscoveryService;
-import network.Receiver;
 import network.NetworkManager;
+import network.Receiver;
 import ipc.IPCServer;
 
-public class Main {
+public class CoreMain {
     public static void main(String[] args) {
         ConfigManager config = new ConfigManager("src/main/resources/config.toml");
         NetworkManager networkManager = new NetworkManager();
@@ -21,7 +20,6 @@ public class Main {
         receiver.start();
         ipcServer.start();
 
-        CLI cli = new CLI(config);
-        cli.start();
+        System.out.println("ByteMe Core gestartet. Discovery, Receiver und IPC-Server laufen.");
     }
 }
