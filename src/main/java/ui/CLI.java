@@ -1,9 +1,11 @@
-
 package ui;
 
 import config.ConfigManager;
 import ipc.IPCClient;
 
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
 import java.util.Scanner;
 
 public class CLI {
@@ -23,7 +25,8 @@ public class CLI {
                 System.out.println("2. MSG senden");
                 System.out.println("3. IMG senden");
                 System.out.println("4. LEAVE senden");
-                System.out.println("5. Beenden");
+                System.out.println("5. WHOIS suchen");
+                System.out.println("6. Beenden");
                 System.out.print("Auswahl: ");
                 String input = scanner.nextLine();
 
@@ -60,6 +63,11 @@ public class CLI {
                         ipcClient.sendCommand("LEAVE " + leaveHandle);
                         break;
                     case "5":
+                        System.out.print("Handle zum Suchen (WHOIS): ");
+                        String target = scanner.nextLine();
+                        sendWhois(target);
+                        break;
+                    case "6":
                         return;
                     default:
                         System.out.println("Ungültige Eingabe.");
@@ -67,4 +75,30 @@ public class CLI {
             }
         }
     }
+
+    private void sendWhois(String handle) {
+        try {
+            DatagramSocket socket = new DatagramSocket();
+            socket.setSoTimeout(3000);  // 3 Sekunden auf Antwort warten
+            String whoisMessage = "WHOIS " + handle + "\n";
+            byte[] buffer = whoisMessage.getBytes();
+            DatagramPacket packet = new DatagramPacket(
+                buffer, buffer.length,
+                InetAddress.getByName("255.255.255.255"), 4000
+            );
+            socket.setBroadcast(true);
+            socket.send(packet);
+            System.out.println("WHOIS gesendet: " + handle);
+
+            byte[] recvBuf = new byte[512];
+            DatagramPacket response = new DatagramPacket(recvBuf, recvBuf.length);
+            socket.receive(response);
+            String iam = new String(response.getData(), 0, response.getLength());
+            System.out.println("Antwort erhalten: " + iam);
+            socket.close();
+        } catch (Exception e) {
+            System.out.println("Keine Antwort auf WHOIS oder Fehler: " + e.getMessage());
+        }
+    }
 }
+
