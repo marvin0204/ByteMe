@@ -1,12 +1,16 @@
 
+/**
+ * Monolithische Version von ByteMe.
+ * Startet alle Komponenten (Discovery, Receiver, IPC, CLI) in einem einzigen Java-Prozess.
+ */
 package main;
 
-import ui.CLI;
 import config.ConfigManager;
 import discovery.DiscoveryService;
-import network.Receiver;
 import network.NetworkManager;
+import network.Receiver;
 import ipc.IPCServer;
+import ui.CLI;
 
 public class Main {
     public static void main(String[] args) {
