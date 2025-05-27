@@ -1,6 +1,6 @@
 
-handle=bob
-port=5001
+handle=Alice
+port=5000
 whoisport=4000
 autoreply=Bin gerade nicht da.
 imagepath=images/

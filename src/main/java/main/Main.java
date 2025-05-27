@@ -1,4 +1,8 @@
 
+/**
+ * Monolithische Version von ByteMe.
+ * Startet alle Komponenten (Discovery, Receiver, IPC, CLI) in einem einzigen Java-Prozess.
+ */
 package main;
 
 import config.ConfigManager;
