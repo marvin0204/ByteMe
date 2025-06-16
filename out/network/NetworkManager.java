@@ -53,3 +53,19 @@ public class NetworkManager {
             System.err.println("❌ Fehler beim Senden des Bildes: " + e.getMessage());
         }
     }
+
+    private void broadcastMessage(String message, String type) {
+        try (DatagramSocket socket = new DatagramSocket()) {
+            socket.setBroadcast(true);
+            byte[] buffer = message.getBytes(StandardCharsets.UTF_8);
+            DatagramPacket packet = new DatagramPacket(
+                buffer, buffer.length,
+                InetAddress.getByName("255.255.255.255"), BROADCAST_PORT
+            );
+            socket.send(packet);
+            System.out.println("📡 Broadcast (" + type + ") gesendet: " + message.trim());
+        } catch (Exception e) {
+            System.err.println("❌ Fehler beim Broadcast (" + type + "): " + e.getMessage());
+        }
+    }
+}
