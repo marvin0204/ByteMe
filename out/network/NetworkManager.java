@@ -1,37 +1,22 @@
-package out.network;
-
 package network;
 
-import config.ConfigManager;
-
-import java.io.*;
-import java.net.ServerSocket;
+import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
 import java.net.Socket;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.nio.charset.StandardCharsets;
 
-public class Receiver implements Runnable {
+public class NetworkManager {
 
-    private final ConfigManager config;
+    private final int BROADCAST_PORT = 4000;
 
-    public Receiver(ConfigManager config) {
-        this.config = config;
+    public void sendJoin(String handle, int port) {
+        String message = "JOIN " + handle + " " + port + "\n";
+        broadcastMessage(message, "JOIN");
     }
-
-    @Override
-    public void run() {
-        int port = Integer.parseInt(config.get("port"));
-
-        try (ServerSocket serverSocket = new ServerSocket(port)) {
-            System.out.println("📥 Receiver läuft auf Port " + port);
-
-            while (true) {
-                Socket clientSocket = serverSocket.accept();
-                new Thread(() -> handleConnection(clientSocket)).start();
-            }
-
-        } catch (IOException e) {
-            System.err.println("❌ Fehler beim Starten des Receivers: " + e.getMessage());
-        }
-    }
-
+    
+    public void sendLeave(String handle) {
+        String message = "LEAVE " + handle + "\n";
+        broadcastMessage(message, "LEAVE");
