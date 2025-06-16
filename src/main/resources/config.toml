@@ -1,6 +1,7 @@
 
-handle=Alice
-port=5000
-whoisport=4000
-autoreply=Bin gerade nicht da.
-imagepath=images/
+
+
+port = 5001
+imagepath = "images"
+autoreply = "Ich bin gerade nicht da."
+autoreply_enabled = true
