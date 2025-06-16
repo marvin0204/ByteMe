@@ -32,3 +32,35 @@ public class Receiver implements Runnable {
             System.err.println("❌ Fehler beim Starten des Receivers: " + e.getMessage());
         }
     }
+
+    private void handleConnection(Socket socket) {
+        try (
+                BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                InputStream rawIn = socket.getInputStream()
+        ) {
+            String header = reader.readLine();
+
+            if (header == null) return;
+
+            String[] parts = header.split(" ", 3);
+            String command = parts[0];
+
+            switch (command) {
+                case "MSG":
+                    handleMessage(parts);
+                    break;
+                case "IMG":
+                    handleImage(parts, rawIn);
+                    break;
+                default:
+                    System.out.println("⚠️ Unbekannter Befehl: " + header);
+            }
+
+        } catch (IOException e) {
+            System.err.println("❌ Fehler beim Verarbeiten der Nachricht: " + e.getMessage());
+        } finally {
+            try {
+                socket.close();
+            } catch (IOException ignored) {}
+        }
+    }
