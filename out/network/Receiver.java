@@ -64,3 +64,21 @@ public class Receiver implements Runnable {
             } catch (IOException ignored) {}
         }
     }
+
+    private void handleMessage(String[] parts) {
+        if (parts.length < 3) {
+            System.out.println("⚠️ Ungültige MSG-Nachricht");
+            return;
+        }
+
+        String from = parts[1];
+        String text = parts[2].replace("\"", "");
+        System.out.println("💬 Nachricht von " + from + ": " + text);
+
+        // Optional: Auto-Reply
+        if (Boolean.parseBoolean(config.get("autoreply_enabled"))) {
+            String autoReply = config.get("autoreply");
+            System.out.println("↩️  Auto-Antwort aktiviert: " + autoReply);
+            // Du könntest hier `NetworkManager.sendMsg()` aufrufen (falls verfügbar).
+        }
+    }
