@@ -82,3 +82,30 @@ public class Receiver implements Runnable {
             // Du könntest hier `NetworkManager.sendMsg()` aufrufen (falls verfügbar).
         }
     }
+
+    private void handleImage(String[] parts, InputStream in) {
+        if (parts.length < 3) {
+            System.out.println("⚠️ Ungültige IMG-Nachricht");
+            return;
+        }
+
+        String from = parts[1];
+        int size = Integer.parseInt(parts[2]);
+
+        try {
+            byte[] imageData = in.readNBytes(size);
+
+            String imagePath = config.get("imagepath");
+            String fileName = "image_from_" + from + "_" + System.currentTimeMillis() + ".jpg";
+
+            Path path = Path.of(imagePath, fileName);
+            Files.createDirectories(path.getParent());
+            Files.write(path, imageData);
+
+            System.out.println("🖼️ Bild empfangen von " + from + " und gespeichert unter: " + path);
+
+        } catch (IOException e) {
+            System.err.println("❌ Fehler beim Speichern des Bildes: " + e.getMessage());
+        }
+    }
+}
