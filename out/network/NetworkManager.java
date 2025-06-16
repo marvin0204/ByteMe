@@ -20,3 +20,36 @@ public class NetworkManager {
     public void sendLeave(String handle) {
         String message = "LEAVE " + handle + "\n";
         broadcastMessage(message, "LEAVE");
+    }
+
+    public void sendMsg(String handle, String messageText, String ip, int port) {
+        String message = "MSG " + handle + " \"" + messageText + "\"\n";
+        try (Socket socket = new Socket(ip, port);
+             OutputStream out = socket.getOutputStream();
+             PrintWriter writer = new PrintWriter(out, true)) {
+
+            writer.print(message);
+            writer.flush();
+            System.out.println("✅ Textnachricht an " + handle + " gesendet: " + messageText);
+
+        } catch (Exception e) {
+            System.err.println("❌ Fehler beim Senden der Nachricht: " + e.getMessage());
+        }
+    }
+
+    public void sendImg(String handle, byte[] imageData, String ip, int port) {
+        String header = "IMG " + handle + " " + imageData.length + "\n";
+        try (Socket socket = new Socket(ip, port);
+             OutputStream out = socket.getOutputStream();
+             PrintWriter writer = new PrintWriter(out, true)) {
+
+            writer.print(header);
+            writer.flush();
+            out.write(imageData);
+            out.flush();
+            System.out.println("✅ Bild an " + handle + " gesendet (" + imageData.length + " Bytes)");
+
+        } catch (Exception e) {
+            System.err.println("❌ Fehler beim Senden des Bildes: " + e.getMessage());
+        }
+    }
