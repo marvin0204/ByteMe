@@ -28,26 +28,36 @@ public class NetworkManager {
              OutputStream out = socket.getOutputStream();
              PrintWriter writer = new PrintWriter(out, true)) {
 
-            writer.print(message);
-            writer.flush();
+            writer.println(message);
             System.out.println("✅ Textnachricht an " + handle + " gesendet: " + messageText);
 
         } catch (Exception e) {
-            System.err.println("❌ Fehler beim Senden der Nachricht: " + e.getMessage());
+            System.out.println("❌ Fehler beim Senden der Nachricht: " + e.getMessage());
         }
     }
 
     public void sendImg(String handle, byte[] imageData, String ip, int port) {
-        String header = "IMG " + handle + " " + imageData.length + "\n";
+        if (imageData == null || imageData.length == 0) {
+            System.err.println("❌ Bilddaten sind leer oder null. Versand abgebrochen.");
+            return;
+        }
+
+        String header = "IMG " + handle + " " + imageData.length;
+        System.out.println("📤 Starte Bildversand an " + handle);
+        System.out.println("📦 Bildgröße: " + imageData.length + " Bytes");
+        System.out.println("➡ Ziel: " + ip + ":" + port);
+
         try (Socket socket = new Socket(ip, port);
              OutputStream out = socket.getOutputStream();
              PrintWriter writer = new PrintWriter(out, true)) {
 
-            writer.print(header);
-            writer.flush();
-            out.write(imageData);
+            writer.println(header);  // wichtig: mit \n
+            writer.flush();         // explizit spülen, um sicherzustellen, dass der Header sofort rausgeht
+
+            out.write(imageData);   // Bilddaten direkt im Anschluss
             out.flush();
-            System.out.println("✅ Bild an " + handle + " gesendet (" + imageData.length + " Bytes)");
+
+            System.out.println("✅ Bild erfolgreich an " + handle + " gesendet");
 
         } catch (Exception e) {
             System.err.println("❌ Fehler beim Senden des Bildes: " + e.getMessage());
@@ -59,8 +69,8 @@ public class NetworkManager {
             socket.setBroadcast(true);
             byte[] buffer = message.getBytes(StandardCharsets.UTF_8);
             DatagramPacket packet = new DatagramPacket(
-                buffer, buffer.length,
-                InetAddress.getByName("255.255.255.255"), BROADCAST_PORT
+                    buffer, buffer.length,
+                    InetAddress.getByName("255.255.255.255"), BROADCAST_PORT
             );
             socket.send(packet);
             System.out.println("📡 Broadcast (" + type + ") gesendet: " + message.trim());

@@ -35,13 +35,19 @@ public class Receiver implements Runnable {
     }
 
     private void handleConnection(Socket socket) {
-        try (
-                BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-                InputStream rawIn = socket.getInputStream()
-        ) {
-            String header = reader.readLine();
+        try {
+            InputStream in = socket.getInputStream();
 
-            if (header == null) return;
+            // Header manuell zeichenweise lesen bis \n
+            ByteArrayOutputStream headerBuffer = new ByteArrayOutputStream();
+            int c;
+            while ((c = in.read()) != -1) {
+                if (c == '\n') break;
+                headerBuffer.write(c);
+            }
+            String header = headerBuffer.toString().trim();
+
+            if (header == null || header.isEmpty()) return;
 
             String[] parts = header.split(" ", 3);
             String command = parts[0];
@@ -51,7 +57,7 @@ public class Receiver implements Runnable {
                     handleMessage(parts);
                     break;
                 case "IMG":
-                    handleImage(parts, rawIn);
+                    handleImage(parts, in);
                     break;
                 default:
                     System.out.println("⚠️ Unbekannter Befehl: " + header);
@@ -76,11 +82,10 @@ public class Receiver implements Runnable {
         String text = parts[2].replace("\"", "");
         System.out.println("💬 Nachricht von " + from + ": " + text);
 
-        // Optional: Auto-Reply
         if (Boolean.parseBoolean(config.get("autoreply_enabled"))) {
             String autoReply = config.get("autoreply");
             System.out.println("↩️  Auto-Antwort aktiviert: " + autoReply);
-            // Du könntest hier `NetworkManager.sendMsg()` aufrufen (falls verfügbar).
+            // Optional: automatische Antwort implementierbar mit NetworkManager
         }
     }
 
