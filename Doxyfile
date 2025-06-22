@@ -1,0 +1,22 @@
+# Doxyfile für ByteMe Chat
+
+PROJECT_NAME           = "ByteMe Chat"
+OUTPUT_DIRECTORY       = docs
+RECURSIVE              = YES
+INPUT                  = src
+FILE_PATTERNS          = *.java
+GENERATE_LATEX         = NO
+EXTRACT_ALL            = YES
+
+# Optional (aber empfohlen für bessere Java-Unterstützung)
+OPTIMIZE_OUTPUT_JAVA   = YES
+
+# Damit HTML generiert wird
+GENERATE_HTML          = YES
+
+# Sprache auf Deutsch setzen (falls gewünscht)
+OUTPUT_LANGUAGE        = German
+
+# Kommentare im Javadoc-Stil erkennen (für Java)
+JAVADOC_AUTOBRIEF      = YES
+EXTENSION_MAPPING      = java=Java

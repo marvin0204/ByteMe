@@ -1,0 +1,8 @@
+src/main/java/config/ConfigManager.java
+src/main/java/discovery/DiscoveryService.java
+src/main/java/ipc/IPCClient.java
+src/main/java/ipc/IPCServer.java
+src/main/java/main/Main.java
+src/main/java/network/NetworkManager.java
+src/main/java/network/Receiver.java
+src/main/java/ui/CLI.java
