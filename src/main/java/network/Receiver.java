@@ -1,117 +1,90 @@
-
 package network;
 
 import config.ConfigManager;
 
-import java.io.*;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.io.FileOutputStream;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.nio.charset.StandardCharsets;
 
+/**
+ * @class Receiver
+ * @brief Lauscht auf eingehende UDP-Nachrichten und verarbeitet diese.
+ *
+ * Unterstützt den Empfang von Textnachrichten (MSG) sowie Bilddaten (IMG).
+ */
 public class Receiver implements Runnable {
 
     private final ConfigManager config;
 
+    /**
+     * @brief Konstruktor für den Receiver.
+     * @param config Die Konfiguration, welche die Netzwerkparameter enthält.
+     */
     public Receiver(ConfigManager config) {
         this.config = config;
     }
 
+    /**
+     * @brief Startet den Empfangs-Thread.
+     */
+    public void start() {
+        run();
+    }
+
+    /**
+     * @brief Führt den Empfangsprozess aus.
+     *
+     * Wartet auf Datagramme und verarbeitet je nach Typ die empfangenen Inhalte.
+     */
     @Override
     public void run() {
-        int port = Integer.parseInt(config.get("port"));
+        try {
+            int port = Integer.parseInt(config.get("port"));
+            DatagramSocket socket = new DatagramSocket(port);
+            byte[] buffer = new byte[2048];
 
-        try (ServerSocket serverSocket = new ServerSocket(port)) {
-            System.out.println("📥 Receiver läuft auf Port " + port);
+            System.out.println("[Receiver] Lausche auf Port " + port + "...");
 
             while (true) {
-                Socket clientSocket = serverSocket.accept();
-                new Thread(() -> handleConnection(clientSocket)).start();
+                DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
+                socket.receive(packet);
+
+                String message = new String(packet.getData(), 0, packet.getLength(), StandardCharsets.UTF_8).trim();
+                System.out.println("[Receiver] Nachricht empfangen: " + message);
+
+                if (message.startsWith("MSG")) {
+                    String[] parts = message.split(" ", 3);
+                    if (parts.length >= 3) {
+                        String from = packet.getAddress().getHostAddress();
+                        String sender = parts[1];
+                        String text = parts[2];
+                        System.out.println("[MSG] Von " + sender + " (" + from + "): " + text);
+                    }
+                } else if (message.startsWith("IMG")) {
+                    String[] parts = message.split(" ");
+                    if (parts.length >= 3) {
+                        String sender = parts[1];
+                        int size = Integer.parseInt(parts[2]);
+
+                        System.out.println("[IMG] Bild von " + sender + " erwartet, Größe: " + size + " Bytes");
+
+                        // Empfange Bilddaten
+                        byte[] imageData = new byte[size];
+                        DatagramPacket imagePacket = new DatagramPacket(imageData, size);
+                        socket.receive(imagePacket);
+
+                        String path = config.get("imagepath") + "/bild_von_" + sender + ".jpg";
+                        try (FileOutputStream fos = new FileOutputStream(path)) {
+                            fos.write(imageData);
+                        }
+
+                        System.out.println("[IMG] Bild gespeichert unter: " + path);
+                    }
+                }
             }
-
-        } catch (IOException e) {
-            System.err.println("❌ Fehler beim Starten des Receivers: " + e.getMessage());
-        }
-    }
-
-    private void handleConnection(Socket socket) {
-        try {
-            InputStream in = socket.getInputStream();
-
-            // Header manuell zeichenweise lesen bis \n
-            ByteArrayOutputStream headerBuffer = new ByteArrayOutputStream();
-            int c;
-            while ((c = in.read()) != -1) {
-                if (c == '\n') break;
-                headerBuffer.write(c);
-            }
-            String header = headerBuffer.toString().trim();
-
-            if (header == null || header.isEmpty()) return;
-
-            String[] parts = header.split(" ", 3);
-            String command = parts[0];
-
-            switch (command) {
-                case "MSG":
-                    handleMessage(parts);
-                    break;
-                case "IMG":
-                    handleImage(parts, in);
-                    break;
-                default:
-                    System.out.println("⚠️ Unbekannter Befehl: " + header);
-            }
-
-        } catch (IOException e) {
-            System.err.println("❌ Fehler beim Verarbeiten der Nachricht: " + e.getMessage());
-        } finally {
-            try {
-                socket.close();
-            } catch (IOException ignored) {}
-        }
-    }
-
-    private void handleMessage(String[] parts) {
-        if (parts.length < 3) {
-            System.out.println("⚠️ Ungültige MSG-Nachricht");
-            return;
-        }
-
-        String from = parts[1];
-        String text = parts[2].replace("\"", "");
-        System.out.println("💬 Nachricht von " + from + ": " + text);
-
-        if (Boolean.parseBoolean(config.get("autoreply_enabled"))) {
-            String autoReply = config.get("autoreply");
-            System.out.println("↩️  Auto-Antwort aktiviert: " + autoReply);
-            // Optional: automatische Antwort implementierbar mit NetworkManager
-        }
-    }
-
-    private void handleImage(String[] parts, InputStream in) {
-        if (parts.length < 3) {
-            System.out.println("⚠️ Ungültige IMG-Nachricht");
-            return;
-        }
-
-        String from = parts[1];
-        int size = Integer.parseInt(parts[2]);
-
-        try {
-            byte[] imageData = in.readNBytes(size);
-
-            String imagePath = config.get("imagepath");
-            String fileName = "image_from_" + from + "_" + System.currentTimeMillis() + ".jpg";
-
-            Path path = Path.of(imagePath, fileName);
-            Files.createDirectories(path.getParent());
-            Files.write(path, imageData);
-
-            System.out.println("🖼️ Bild empfangen von " + from + " und gespeichert unter: " + path);
-
-        } catch (IOException e) {
-            System.err.println("❌ Fehler beim Speichern des Bildes: " + e.getMessage());
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }
