@@ -1,7 +1,0 @@
-
-
-
-port = 5001
-imagepath = "images"
-autoreply = "Ich bin gerade nicht da."
-autoreply_enabled = true
